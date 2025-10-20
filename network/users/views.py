@@ -8,22 +8,36 @@ from users.serializers import EndUsers_LogInfo_Serials
 from rest_framework.generics import GenericAPIView
 from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.permissions import AllowAny
 import random
 #import requests
 import urllib.request
 import urllib.parse
+
+
+
+
 # Create your views here.
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_user(request):
+    phone_number = request.data.get('phonenumber')
+    email = request.data.get('email')
+    print(f"view:-> phone_number: {phone_number} and email: {email}")
+    return Response({"message": "OTP sent successfully"}, status=status.HTTP_200_OK)
+
 
 # def send_otp(phonenumber,otp):
 
  
-def sendSMS(apikey, numbers, sender, message):
-    data = urllib.parse.urlencode({apikey,numbers, message,sender})
-    data = data.encode('utf-8')
-    request = urllib.request.Request('https://api.textlocal.in/send/?')
-    f = urllib.request.urlopen(request, data)
-    fr = f.read()
-    return(fr)
+# def sendSMS(apikey, numbers, sender, message):
+#     data = urllib.parse.urlencode({apikey,numbers, message,sender})
+#     data = data.encode('utf-8')
+#     request = urllib.request.Request('https://api.textlocal.in/send/?')
+#     f = urllib.request.urlopen(request, data)
+#     fr = f.read()
+#     return(fr)
     
 
 
@@ -36,19 +50,21 @@ class Registration(APIView):
     queryset = EndUsers_LogInfo.objects.all()
 
 
-    def post(self,*args,**kwargs):
+    def post(self,request,*args,**kwargs):
 
-        serilaizer_data = self.serializer_class(data = self.request.data)
+        serilaizer_data = self.serializer_class(data = request.data)
         if serilaizer_data.is_valid():
             phone_number = serilaizer_data.validated_data['phonenumber']
 
             # generate otp
             otp = random.randint(1000,9999)
 
-            resp = sendSMS('NjU2NzRjMzc2ZjM3NDgzNjYyNTY0ZjQ5NmY2NjU0NDQ=', '917001065323', 'Jims Autos', 'This is your message')
-            print (resp)
+            # resp = sendSMS('NjU2NzRjMzc2ZjM3NDgzNjYyNTY0ZjQ5NmY2NjU0NDQ=', '917001065323', 'Jims Autos', 'This is your message')
+            print (f"otp for verification: {otp}" )
             return Response({"message": "OTP sent successfully"}, status=status.HTTP_200_OK)
         return Response(serilaizer_data.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+  
 
 
 

@@ -17,10 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from home.admin import seller_site
-from users.views import Registration
+from users.views import Registration,verify_user
+
+
 
 
 urlpatterns = [
     path('register/', Registration.as_view(), name='register'),
+    path('verify_user/', verify_user, name='verify_user'),
     
 ]
