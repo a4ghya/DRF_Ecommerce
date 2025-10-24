@@ -93,3 +93,76 @@ class AuthenticationTests(TestCase):
 
         self.assertEqual(self.email_user.username,'askarghya@gmail.com')
         self.assertEqual(e_user,self.email_user)
+
+
+########## Test serializers.#############
+from users.serializers import EmailRegistration_serializer
+class EmailSerializerTest(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.valid_data = {
+            'email': 'askarghya@gmail.com',
+            'password': 'A4ghya@128',
+            'confirm_password': 'A4ghya@128'
+        }
+        self.mismatch_pass = {
+            'email': 'askarghya@gmail.com',
+            'password': 'A4ghya@128',
+            'confirm_password': 'Arghya@128'
+
+        }
+
+        self.weak_pass ={
+            'email': 'askarghya@gmail.com',
+            'password': 'Arghya',
+            'confirm_password': 'Arghya'
+        }
+
+        self.no_confirm ={
+            'email': 'askarghya@gmail.com',
+            'password': 'A4ghya@128'
+
+        }
+
+        self.no_email ={
+            'password': 'A4ghya@128',
+            'confirm_password': 'A4ghya@128'
+        }
+    
+        return super().setUp()
+    
+    def test_email_user_creation(self):
+        serializer = EmailRegistration_serializer(data = self.valid_data)
+        self.assertTrue(serializer.is_valid())
+        user = serializer.save()
+        #print(f"User: {user}")
+        self.assertEqual(CustomUserModel.objects.filter(email = 'askarghya@gmail.com').exists(),True )
+        self.assertEqual(user.email,'askarghya@gmail.com')
+
+    def test_email_with_mismatch_password(self):
+        serializer = EmailRegistration_serializer(data = self.mismatch_pass)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(str(serializer.errors['non_field_errors'][0]), 'password did not match')
+    
+    def test_with_weak_password(self):
+        serializer = EmailRegistration_serializer(data = self.weak_pass)
+        self.assertFalse(serializer.is_valid())
+        print(serializer.errors)
+
+    def test_no_confirmation_password(self):
+        serializer = EmailRegistration_serializer(data = self.no_confirm)
+        self.assertFalse(serializer.is_valid())
+        print(serializer.errors)
+
+    def test_no_email(self):
+        serializer = EmailRegistration_serializer(data = self.no_email)
+        self.assertFalse(serializer.is_valid())
+        print(serializer.errors)
+        with self.assertRaises(AssertionError):
+            serializer.save()
+        self.assertFalse(CustomUserModel.objects.filter(email='askarghya@gmail.com').exists())
+        
+
+
+
+    
