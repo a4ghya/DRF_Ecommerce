@@ -2,6 +2,8 @@ from rest_framework import serializers
 from users.models import EndUsers_LogInfo, Sellers_LogInfo, CustomUserModel
 import re
 from django.contrib.auth.password_validation import validate_password
+
+from users.services.otp_service import OTPService
 #from django.contrib.auth.models import User
 # class UserSerials(serializers.Modelserializer):
 #     class Meta:
@@ -40,9 +42,42 @@ class EmailRegistration_serializer(serializers.ModelSerializer):
     def create(self,validate_data):
         return CustomUserModel.objects.create_email_user(email =validate_data['email'],password = validate_data['password'] )
 
+class PhoneSendOTPSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=15)
+    
+    def validate_phone_number(self, value):
+        if CustomUserModel.objects.filter(phone_number = value).exists():
+            raise serializers.ValidationError('phone_number already exists')
+        
+        return value
 
+class PhoneVerifyRegisterSerializer(serializers.ModelSerializer):
+    otp = serializers.IntegerField(min_value=1000, max_value=9999,write_only = True)
+    
+    class Meta:
+        model = CustomUserModel
+        fields = ['phone_number', 'otp']
+        extra_kwargs = {
+            'phone_number': {'required':True}
+        }
 
+    def validate_phone_number(self, value):
+        if CustomUserModel.objects.filter(phone_number = value).exists():
+            raise serializers.ValidationError('phone_number already exists')
+        
+        return value
+    
+    def validate(self, data):
+        phone = data['phone_number']
+        user_input_otp = data['otp']
 
+        if phone and user_input_otp:
+            if not OTPService.verify_otp(phone,user_input_otp):
+                raise serializers.ValidationError({'otp':'invalid otp'})
+
+        return data
+    def create(self,validate_data):
+        return CustomUserModel.objects.create_phone_user(phone_number =validate_data['phone_number'])
 
 class OTPVerificationSerializer(serializers.Serializer):
    

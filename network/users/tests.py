@@ -37,6 +37,11 @@ class CustomUserModelTests(TestCase):
         with self.assertRaises(ValueError):
             CustomUserModel.objects.create_user(password="somepass")
 
+   
+        
+
+        
+
 
 # Test the backend
 from django.contrib.auth import authenticate
@@ -164,5 +169,74 @@ class EmailSerializerTest(TestCase):
         
 
 
+# test for phone registration
 
+from users.serializers import PhoneSendOTPSerializer,PhoneVerifyRegisterSerializer
+from users.services.otp_service import OTPService
+
+
+class PhoneRegistrationTest(TestCase):
+
+    def setUp(self):
+        cache.clear()
+        send_otp = OTPService.generate_otp(7076246322)
+        
+        self.validate_data={
+            'phone_number': 7076246322,
+            'otp': send_otp
+        }
+
+        self.mismatch_data = {
+            'phone_number': 7076246322,
+            'otp': 9999 # a random otp
+        }
+        return super().setUp()
     
+    def test_phone_registration(self):
+       
+       # ph = PhoneSendOTPSerializer(data = self.validate_data)
+       serializer = PhoneVerifyRegisterSerializer(data = self.validate_data)
+       self.assertTrue(serializer.is_valid())
+    
+    # 5. Save the user
+       user = serializer.save()
+        
+        # 6. Assertions
+       self.assertEqual(user.phone_number, '7076246322')
+       self.assertTrue(CustomUserModel.objects.filter(phone_number='7076246322').exists())
+
+    def test_with_invalid_otp(self):
+        serializer = PhoneVerifyRegisterSerializer(data=self.mismatch_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('otp', serializer.errors)
+    
+
+
+# test mixed data
+
+class MixedRegistration(TestCase):
+
+    def setUp(self):
+        cache.clear()
+        send_otp = OTPService.generate_otp(7076246322)
+        self.mixed_data = {
+            'email': 'askarghya@gmail.com',
+            'phone_number': 7076246322,
+            'password': 'A4ghya@128',
+            'confirm_password': 'A4ghya@128',
+            'otp':send_otp   
+        }
+
+    def test_mixed_email_registration(self):
+        serilizer = EmailRegistration_serializer(data =self.mixed_data)
+        self.assertTrue(serilizer.is_valid())
+        user = serilizer.save()
+        self.assertEqual(user.email, 'askarghya@gmail.com')
+        self.assertFalse(user.phone_number, '7076246322')
+
+    def test_mixed_phone_registration(self):
+        serilizer = PhoneVerifyRegisterSerializer(data =self.mixed_data)
+        self.assertTrue(serilizer.is_valid())
+        user = serilizer.save()
+        self.assertFalse(user.email, 'askarghya@gmail.com')
+        self.assertEqual(user.phone_number, '7076246322')

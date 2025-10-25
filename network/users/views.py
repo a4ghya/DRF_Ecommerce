@@ -24,6 +24,8 @@ import urllib.parse
 def verify_user(request):
     phone_number = request.data.get('phonenumber')
     email = request.data.get('email')
+    # if email:
+        
     print(f"view:-> phone_number: {phone_number} and email: {email}")
     return Response({"message": "OTP sent successfully"}, status=status.HTTP_200_OK)
 
