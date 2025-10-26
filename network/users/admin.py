@@ -1,4 +1,4 @@
 from django.contrib import admin
-from users.models import EndUsers_LogInfo
+from users.models import CustomUserModel
 # Register your models here.
-admin.site.register(EndUsers_LogInfo)
+admin.site.register(CustomUserModel)

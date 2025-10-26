@@ -72,8 +72,10 @@ class PhoneVerifyRegisterSerializer(serializers.ModelSerializer):
         user_input_otp = data['otp']
 
         if phone and user_input_otp:
-            if not OTPService.verify_otp(phone,user_input_otp):
-                raise serializers.ValidationError({'otp':'invalid otp'})
+            result = OTPService.verify_otp(phone,user_input_otp)
+            if result['status'] != 'valid':
+
+                raise serializers.ValidationError(result['message'])
 
         return data
     def create(self,validate_data):

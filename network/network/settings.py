@@ -92,8 +92,10 @@ AUTHENTICATION_BACKENDS =[
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.db.DatabaseCache", # database cache table
-        "LOCATION": "my_cache_table", # need to create cache table with python manage.py createcachetable
+        "BACKEND":"django.core.cache.backends.redis.RedisCache",
+         "LOCATION": "redis://127.0.0.1:6379",
+      #  "BACKEND": "django.core.cache.backends.db.DatabaseCache", # database cache table
+      #  "LOCATION": "my_cache_table", # need to create cache table with python manage.py createcachetable
     }
 }
 
@@ -105,7 +107,19 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        
+        'email': '3/minute',
+        'phone': '3/hour',
+        'otp_send':'3/minute'
+    }
+
 }
 
 # SIMPLE_JWT = {
