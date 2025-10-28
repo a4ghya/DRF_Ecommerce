@@ -17,15 +17,31 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from home.admin import seller_site
-from users.views import EmailRegistrationAPI
+
 from rest_framework.routers import DefaultRouter
-from users.views import RegistrationView
+from users.views import RegistrationView,ProfileView,ContactUpdateView,UserAuthenticateView
 router = DefaultRouter()
 router.register(r'register', RegistrationView, basename='register')
+router.register(r'contact_update', ContactUpdateView, basename='contact_update')
+
+
+#router.register(r'profile', ProfileView, basename='ProfileView')
+
+
+router.register(r'login',UserAuthenticateView,basename='login')
+
+profile_router = DefaultRouter()
+profile_router.register(r'', ProfileView, basename='profile') 
 
 
 urlpatterns = [
     path('auth/', include(router.urls)),
+    path('profile/', include(profile_router.urls)),
+
+    # path('profile/', include(profile_router.urls)),
+    # path('login/', include(login_router.urls)),
+
+
     #path('register/email/', EmailRegistrationAPI.as_view(), name='email_register'),
     
     

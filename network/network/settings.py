@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'users',
     'home',
     'rest_framework_simplejwt',
+    #django-redis', 
 ]
 
 MIDDLEWARE = [
@@ -94,6 +95,9 @@ CACHES = {
     "default": {
         "BACKEND":"django.core.cache.backends.redis.RedisCache",
          "LOCATION": "redis://127.0.0.1:6379",
+        #  "OPTIONS": {
+        #     "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        # }
       #  "BACKEND": "django.core.cache.backends.db.DatabaseCache", # database cache table
       #  "LOCATION": "my_cache_table", # need to create cache table with python manage.py createcachetable
     }
@@ -114,12 +118,21 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.ScopedRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        
+        'anon': '1000/day',
         'email': '3/minute',
         'phone': '3/hour',
-        'otp_send':'3/minute'
+        'otp_send':'3/minute',
+        'user':'100/day'
     }
 
+}
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,  # Your Django SECRET_KEY
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # SIMPLE_JWT = {
